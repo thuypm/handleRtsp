@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html><head><title>Live Cam</title></head>
+
+<script src="/socket.io/socket.io.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+<!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.20.0/axios.min.js"></script> -->
+
+<body>
+  <form style="margin-bottom: 20px">
+    <h3>Nhập Link</h3>
+    <input type="text" name="" id="rtspLink" value ="rtsp://wowzaec2demo.streamlock.net/vod/mp4:BigBuckBunny_115k.mov"/>
+    <button type="button" id="btn">Sắp mít</button>
+  </form>
+  <video id="video" autoplay="true" controls="controls"></video>
+  <script type="module">
+    import Vue from 'https://cdn.jsdelivr.net/npm/vue@2.6.12/dist/vue.esm.browser.js'
+  </script>
+  <script>
+    var socket = io('http://localhost:3000');
+    var hls = new Hls();
+
+    var btn = document.getElementById("btn");
+    var rtspLink = document.getElementById("rtspLink");
+    var video = document.getElementById('video');
+    socket.on('response-video',(linkVideo)=>{
+      console.log(linkVideo);
+      hls.attachMedia(video);
+      hls.on(Hls.Events.MEDIA_ATTACHED, function () {
+        hls.loadSource(linkVideo);
+        hls.on(Hls.Events.MANIFEST_PARSED, function (event, data) {
+          console.log("load:" + data.levels.length + " quality level");
+        });
+      })
+    })
+    btn.addEventListener("click", function(e){
+      socket.emit("join-a-video-stream", rtspLink.value);
+    }) 
+  </script> 
+
+</body>
+</html>
